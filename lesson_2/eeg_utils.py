@@ -192,12 +192,14 @@ def compute_psd_mne(data: np.ndarray, sfreq: float = SAMPLE_RATE, fmin=1.0, fmax
     psd : np.ndarray
         Массив PSD формы (n_channels, n_freqs), где каждая строка — спектр одного канала.
     """
+    n_times = data.shape[1]
+
     if n_fft is None:
-        n_fft = int(sfreq * 2)  # Окно по умолчанию — 2 секунды
+        n_fft = min(int(sfreq * 2), n_times)
     psd_all = []
     for ch in range(data.shape[0]):
         psd, freqs = psd_array_welch(
-            data[ch, :], sfreq=sfreq, fmin=fmin, fmax=fmax, n_fft=n_fft, verbose=False
+            data[ch, :], sfreq=sfreq, fmin=fmin, fmax=fmax, n_per_seg=min(250, n_times),n_fft=n_fft, verbose=False
         )
         psd_all.append(psd)
     return freqs, np.vstack(psd_all)
